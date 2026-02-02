@@ -1,0 +1,46 @@
+services:
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: dm
+      POSTGRES_USER: dm_user
+      POSTGRES_PASSWORD: dm_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./sql/inicial.sql:/docker-entrypoint-initdb.d/inicial.sql
+    networks:
+      - dmnet
+
+  pgadmin:
+    image: dpage/pgadmin4:8
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - dmnet
+
+
+  mage:
+    image: mageai/mageai:latest
+    command: mage start dm_project
+    ports:
+      - "6789:6789"
+    volumes:
+      - mage_data:/home/src
+    depends_on:
+      - postgres
+    networks:
+      - dmnet
+
+volumes:
+  pgdata:
+  mage_data:
+
+networks:
+  dmnet:
